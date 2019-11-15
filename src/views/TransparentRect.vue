@@ -2,12 +2,20 @@
     <div class="rect-container">
         <div class="container css">
             <div class="square"></div>
+            <div class="info">
+              <div class="title">CSS原生</div>
+              <code class="code"></code>
+            </div>
         </div>
         <div class="container canvas">
             <div class="test"></div>
+            <div class="title">CSS Houdini</div>
+            <code class="code"></code>
         </div>
         <div class="container webgl">
             <canvas ref="displayCanvas"></canvas>
+            <div class="title">WebGL</div>
+            <code class="code"></code>
         </div>
     </div>
 </template>
@@ -64,7 +72,8 @@ class WebGLCheckerboard {
     constructor(private canvas: HTMLCanvasElement) {
         const width = canvas.offsetWidth
         const height = canvas.offsetHeight
-        canvas.addEventListener('resize', this.onSizeChange.bind(this))
+        //canvas.addEventListener('resize', this.onSizeChange.bind(this))
+        setTimeout(()=>{this.onSizeChange()})
         this.renderer = new THREE.WebGLRenderer({
             canvas
         })
@@ -77,7 +86,9 @@ class WebGLCheckerboard {
         this.camera.position.z = 1000
         this.camera.lookAt(new THREE.Vector3(0, 0, 0))
         this.init();
-        requestAnimationFrame(this.frame);
+        //requestAnimationFrame(this.frame);
+        setTimeout(()=>{this.frame();setTimeout(()=>{this.frame()},30)},30); 
+        //setTimeout(()=>{this.frame();},100); 
     }
     init(){
       this.initObject();
@@ -93,7 +104,7 @@ class WebGLCheckerboard {
         this.camera.top = height / 2
         this.camera.bottom = height / -2
         this.camera.updateProjectionMatrix()
-        this.renderer.setSize(width, height, false)
+        this.renderer.setSize(width, height, false);
     }
     lt:number = 0;
     update(t:number){
@@ -106,8 +117,6 @@ class WebGLCheckerboard {
     }
     frame = ()=>{
       this.update(this.clock.getDelta());
-      if(this.runState)
-      requestAnimationFrame(this.frame);
     }
     pause(){
       this.runState = false;
@@ -116,6 +125,9 @@ class WebGLCheckerboard {
     resume(){
       this.runState = true;
       return this;
+    }
+    destory(){
+      this.pause();
     }
 }
 @Component
@@ -127,15 +139,30 @@ export default class TransparentRect extends Vue {
     }
     mounted(){
       if(!this.webGL)this.webGL = new WebGLCheckerboard(this.$refs['displayCanvas'] as HTMLCanvasElement)
+      this.webGL.resume();
     }
     toRegistPaint() {
         const current: CurrentCSS = CSS as any
         current.paintWorklet.addModule(WorkUrl)
     }
+    beforeDestroy(){
+
+    }
 }
 </script>
+<style>
+
+:root{
+  --bg-color:#222;
+  --text-color: #5187bd;
+  --text-color-light:#bbdaf8;
+}
+</style>
 <style lang="scss" scoped>
+
 .rect-container {
+    padding: 10px;
+    box-sizing: border-box;
     width: 100%;
     height: 100%;
     display: flex;
@@ -145,12 +172,34 @@ export default class TransparentRect extends Vue {
         flex: auto;
         transition: inherit;
         box-sizing: border-box;
+        position: relative;
+        padding: 20px;
+        box-sizing: border-box;
+        .title{
+          position:absolute;
+          bottom: 40px;
+          left: 50%;
+          transform: translate(-50%,-50%);
+          font-size: 1.3em;
+        }
+        .code{
+          position: absolute;
+          bottom: 0;
+          left: 50%;
+          transform: translate(-50%,-50%);
+          opacity: 0;
+          font-size: .8em;
+        }
     }
     .canvas,
     .webgl {
+      position: relative;
+      overflow: hidden;
         canvas {
-            width: 100%;
+            width: 100vw;
             height: 100%;
+            position: absolute;
+            left: 0;
         }
     }
     .canvas {
@@ -187,9 +236,12 @@ export default class TransparentRect extends Vue {
     .container:hover {
         width: 100%;
         height: 100%;
+        filter: drop-shadow(0 0 12px);
+        z-index: 10;
     }
     .container:not(:hover) {
-        width: 0;
+        width: 100px;
+        z-index: 0;
     }
 }
 </style>

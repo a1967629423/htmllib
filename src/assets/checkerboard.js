@@ -17,7 +17,7 @@ var Shader = {
     {
         vec2 normallize = floor(coord);
         float type = mod(normallize.x+normallize.y,2.);
-        return vec3(.4+floor(type)*.4);
+        return vec3(.933+floor(type)*.067);
     
     }
     vec3 block(vec2 range,vec2 uv)
